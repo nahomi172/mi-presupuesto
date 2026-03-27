@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi Presupuesto</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div id="loading" style="display:none;position:fixed;inset:0;background:rgba(253,240,245,0.85);z-index:200;align-items:center;justify-content:center;font-family:'Raleway',sans-serif;font-size:14px;color:#993056;flex-direction:column;gap:12px;">
+  <div style="width:32px;height:32px;border:3px solid #F4C0D1;border-top-color:#D4537E;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+  <span>Guardando...</span>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+<div class="bg">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+  <div class="blob blob-4"></div>
+
+  <header class="header">
+    <div class="header-title">
+      <span class="header-icon">◈</span>
+      <h1>Mi Presupuesto</h1>
+    </div>
+    <nav class="nav">
+      <button class="nav-btn active" onclick="showView('dashboard')" id="nav-dashboard">Inicio</button>
+      <button class="nav-btn" onclick="showView('historial')" id="nav-historial">Historial</button>
+      <button class="nav-btn" onclick="showView('plantilla')" id="nav-plantilla">Plantilla</button>
+    </nav>
+  </header>
+
+  <main class="main">
+
+    <!-- DASHBOARD VIEW -->
+    <div id="view-dashboard" class="view active">
+
+      <div class="fondos-grid">
+        <div class="fondo-card fondo-emergencia">
+          <p class="fondo-label">Fondo emergencia</p>
+          <p class="fondo-amount" id="val-emergencia">S/ 7,000.00</p>
+          <p class="fondo-sub">BCP cuenta cerrada</p>
+          <span class="pill pill-lila">intocable</span>
+        </div>
+        <div class="fondo-card fondo-operativo">
+          <p class="fondo-label">Fondo operativo</p>
+          <p class="fondo-amount" id="val-operativo">S/ 470.29</p>
+          <p class="fondo-sub">Interbank + BCP</p>
+          <span class="pill pill-amber" id="dias-pill">3 días para cobro</span>
+        </div>
+      </div>
+
+      <div class="month-header">
+        <p class="month-label" id="mes-actual"></p>
+        <div class="month-stats">
+          <span id="stat-gastado">Gastado: S/ 0.00</span>
+          <span id="stat-ahorro" class="ahorro-pos">Disponible: S/ 470.29</span>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <p class="lbl">Registrar gasto</p>
+          <input type="text" id="desc" placeholder="Descripcion..." />
+          <input type="number" id="monto" placeholder="Monto (S/)" step="0.01" min="0" />
+          <select id="cat">
+            <option value="Alimentacion">Alimentacion</option>
+            <option value="Movilidad">Movilidad</option>
+            <option value="Limpieza">Limpieza</option>
+            <option value="Servicios">Servicios</option>
+            <option value="Ocio">Ocio</option>
+            <option value="Creditos">Creditos</option>
+            <option value="Vivienda">Vivienda</option>
+            <option value="Otro">Otro</option>
+          </select>
+          <button class="btn-primary" onclick="addGasto()">+ Agregar gasto</button>
+          <button class="btn-secondary" onclick="exportXLS()">↓ Descargar Excel</button>
+        </div>
+
+        <div class="card">
+          <p class="lbl">Gastos del mes</p>
+          <div id="lista-gastos"><p class="empty-msg">Sin gastos aún...</p></div>
+          <div class="divider"></div>
+          <div class="row-total">
+            <span>Total gastado</span>
+            <span id="total-gastado">S/ 0.00</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="cats-card" style="display:none;">
+        <p class="lbl">Por categoría</p>
+        <div id="cats-resumen"></div>
+      </div>
+
+    </div>
+
+    <!-- HISTORIAL VIEW -->
+    <div id="view-historial" class="view">
+      <div class="card">
+        <p class="lbl">Historial por mes</p>
+        <div id="historial-content"><p class="empty-msg">Aún no hay historial registrado.</p></div>
+      </div>
+    </div>
+
+    <!-- PLANTILLA VIEW -->
+    <div id="view-plantilla" class="view">
+      <div class="card">
+        <p class="lbl">Plantilla de gastos fijos</p>
+        <p class="hint">Estos gastos se ofrecerán para cargar al inicio de cada mes.</p>
+        <div id="plantilla-lista"></div>
+        <div class="divider"></div>
+        <p class="lbl" style="margin-top:12px;">Agregar gasto fijo</p>
+        <input type="text" id="p-desc" placeholder="Descripcion..." />
+        <input type="number" id="p-monto" placeholder="Monto (S/)" step="0.01" min="0" />
+        <select id="p-cat">
+          <option value="Creditos">Creditos</option>
+          <option value="Vivienda">Vivienda</option>
+          <option value="Servicios">Servicios</option>
+          <option value="Alimentacion">Alimentacion</option>
+          <option value="Movilidad">Movilidad</option>
+          <option value="Otro">Otro</option>
+        </select>
+        <button class="btn-primary" onclick="addPlantilla()">+ Agregar a plantilla</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL: cargar fijos al inicio de mes -->
+<div id="modal-fijos" class="modal-overlay" style="display:none;">
+  <div class="modal">
+    <p class="modal-title">Nuevo mes detectado</p>
+    <p class="modal-body">¿Deseas cargar los gastos fijos de tu plantilla para este mes?</p>
+    <div id="modal-preview"></div>
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closeModal()">No por ahora</button>
+      <button class="btn-primary" onclick="cargarFijos()">Sí, cargar fijos</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
