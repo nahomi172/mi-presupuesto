@@ -7,16 +7,33 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 </head>
 <body>
 
+<!-- LOGIN -->
+<div id="login-screen" style="display:flex;position:fixed;inset:0;background:#FDF0F5;z-index:300;align-items:center;justify-content:center;flex-direction:column;font-family:'Raleway',sans-serif;">
+  <div style="position:absolute;width:220px;height:220px;border-radius:50%;background:#EEEDFE;opacity:0.4;top:-60px;right:-60px;"></div>
+  <div style="position:absolute;width:150px;height:150px;border-radius:50%;background:#F4C0D1;opacity:0.35;bottom:60px;left:-40px;"></div>
+  <div style="text-align:center;position:relative;z-index:1;">
+    <p style="font-size:28px;color:#C0407A;margin-bottom:4px;">◈</p>
+    <h1 style="font-size:22px;font-weight:600;color:#6B1A3A;margin-bottom:6px;">Mi Presupuesto</h1>
+    <p style="font-size:13px;color:#C06090;margin-bottom:24px;">Inicia sesión para continuar</p>
+    <div id="g_id_onload" data-client_id="969276712231-3q1o9t3es29c8bu8uqc9j9ole7408drc.apps.googleusercontent.com" data-callback="handleLogin" data-auto_prompt="false"></div>
+    <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="sign_in_with" data-shape="pill" data-logo_alignment="left"></div>
+    <p id="login-error" style="font-size:12px;color:#D4537E;margin-top:12px;display:none;">Acceso no autorizado.</p>
+  </div>
+</div>
+
+<!-- LOADING -->
 <div id="loading" style="display:none;position:fixed;inset:0;background:rgba(253,240,245,0.85);z-index:200;align-items:center;justify-content:center;font-family:'Raleway',sans-serif;font-size:14px;color:#993056;flex-direction:column;gap:12px;">
   <div style="width:32px;height:32px;border:3px solid #F4C0D1;border-top-color:#D4537E;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
-  <span>Guardando...</span>
+  <span>Cargando...</span>
 </div>
-<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
-<div class="bg">
+<!-- APP -->
+<div class="bg" id="app" style="display:none;">
   <div class="blob blob-1"></div>
   <div class="blob blob-2"></div>
   <div class="blob blob-3"></div>
@@ -27,120 +44,95 @@
       <span class="header-icon">◈</span>
       <h1>Mi Presupuesto</h1>
     </div>
-    <nav class="nav">
-      <button class="nav-btn active" onclick="showView('dashboard')" id="nav-dashboard">Inicio</button>
-      <button class="nav-btn" onclick="showView('historial')" id="nav-historial">Historial</button>
-      <button class="nav-btn" onclick="showView('plantilla')" id="nav-plantilla">Plantilla</button>
-    </nav>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <nav class="nav">
+        <button class="nav-btn active" onclick="showView('dashboard')" id="nav-dashboard">Inicio</button>
+      </nav>
+      <button onclick="exportXLS()" title="Descargar reporte"
+        style="display:flex;align-items:center;gap:6px;font-family:'Raleway',sans-serif;font-size:12px;font-weight:600;padding:7px 14px;border-radius:20px;border:none;background:#7F77DD;color:white;cursor:pointer;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Reporte
+      </button>
+      <button onclick="logout()" style="font-family:'Raleway',sans-serif;font-size:11px;font-weight:600;padding:6px 12px;border-radius:20px;border:1px solid #F4C0D1;background:transparent;color:#C06090;cursor:pointer;">Salir</button>
+    </div>
   </header>
 
   <main class="main">
-
-    <!-- DASHBOARD VIEW -->
     <div id="view-dashboard" class="view active">
 
+      <!-- FONDOS -->
       <div class="fondos-grid">
-        <div class="fondo-card fondo-emergencia">
+        <div class="fondo-card">
           <p class="fondo-label">Fondo emergencia</p>
-          <p class="fondo-amount" id="val-emergencia">S/ 7,000.00</p>
+          <p class="fondo-amount" id="val-emergencia">S/ 0.00</p>
           <p class="fondo-sub">BCP cuenta cerrada</p>
           <span class="pill pill-lila">intocable</span>
+          <button class="btn-edit-fondo" onclick="openFondoModal('emergencia')">Ajustar</button>
         </div>
-        <div class="fondo-card fondo-operativo">
+        <div class="fondo-card">
           <p class="fondo-label">Fondo operativo</p>
-          <p class="fondo-amount" id="val-operativo">S/ 470.29</p>
+          <p class="fondo-amount" id="val-operativo">S/ 0.00</p>
           <p class="fondo-sub">Interbank + BCP</p>
-          <span class="pill pill-amber" id="dias-pill">3 días para cobro</span>
+          <span class="pill pill-amber">operativo</span>
+          <button class="btn-edit-fondo" onclick="openFondoModal('operativo')">Ajustar / Agregar salario</button>
         </div>
       </div>
 
-      <div class="month-header">
-        <p class="month-label" id="mes-actual"></p>
-        <div class="month-stats">
-          <span id="stat-gastado">Gastado: S/ 0.00</span>
-          <span id="stat-ahorro" class="ahorro-pos">Disponible: S/ 470.29</span>
-        </div>
-      </div>
-
-      <div class="two-col">
-        <div class="card">
-          <p class="lbl">Registrar gasto</p>
-          <input type="text" id="desc" placeholder="Descripcion..." />
-          <input type="number" id="monto" placeholder="Monto (S/)" step="0.01" min="0" />
-          <select id="cat">
-            <option value="Alimentacion">Alimentacion</option>
-            <option value="Movilidad">Movilidad</option>
-            <option value="Limpieza">Limpieza</option>
-            <option value="Servicios">Servicios</option>
-            <option value="Ocio">Ocio</option>
-            <option value="Creditos">Creditos</option>
-            <option value="Vivienda">Vivienda</option>
-            <option value="Otro">Otro</option>
+      <!-- REGISTRAR GASTO -->
+      <div class="card">
+        <p class="lbl">Registrar gasto</p>
+        <div class="form-row">
+          <input type="text" id="desc" placeholder="Descripcion..." style="flex:2;" />
+          <input type="number" id="monto" placeholder="Monto (S/)" step="0.01" min="0" style="flex:1;" />
+          <select id="cat" style="flex:1;">
+            <optgroup label="Gastos Fijos">
+              <option value="gf-alquiler">Alquiler / Hipoteca</option>
+              <option value="gf-luz">Luz</option>
+              <option value="gf-internet">Internet</option>
+              <option value="gf-celular">Celular</option>
+              <option value="gf-mant">Mantenimiento</option>
+              <option value="gf-suscri">Suscripciones</option>
+              <option value="gf-deudas">Deudas / Crédito</option>
+            </optgroup>
+            <optgroup label="Variables Necesarios">
+              <option value="gvn-alim">Alimentación</option>
+              <option value="gvn-transp">Transporte</option>
+              <option value="gvn-gasolina">Gasolina</option>
+              <option value="gvn-salud">Salud</option>
+              <option value="gvn-mascbanos">Mascota Baños</option>
+              <option value="gvn-vet">Veterinario</option>
+            </optgroup>
+            <optgroup label="Variables No Necesarios">
+              <option value="gvnn-rest">Restaurantes</option>
+              <option value="gvnn-bares">Bares</option>
+              <option value="gvnn-compras">Compras Personales</option>
+              <option value="gvnn-viajes">Viajes</option>
+            </optgroup>
           </select>
-          <button class="btn-primary" onclick="addGasto()">+ Agregar gasto</button>
-          <button class="btn-secondary" onclick="exportXLS()">↓ Descargar Excel</button>
-        </div>
-
-        <div class="card">
-          <p class="lbl">Gastos del mes</p>
-          <div id="lista-gastos"><p class="empty-msg">Sin gastos aún...</p></div>
-          <div class="divider"></div>
-          <div class="row-total">
-            <span>Total gastado</span>
-            <span id="total-gastado">S/ 0.00</span>
-          </div>
+          <button class="btn-primary" style="flex:0 0 auto;width:auto;padding:8px 20px;margin-bottom:0;" onclick="addGasto()">+ Agregar</button>
         </div>
       </div>
 
-      <div class="card" id="cats-card" style="display:none;">
-        <p class="lbl">Por categoría</p>
-        <div id="cats-resumen"></div>
-      </div>
-
-    </div>
-
-    <!-- HISTORIAL VIEW -->
-    <div id="view-historial" class="view">
+      <!-- HISTORIAL -->
       <div class="card">
         <p class="lbl">Historial por mes</p>
-        <div id="historial-content"><p class="empty-msg">Aún no hay historial registrado.</p></div>
+        <div id="historial-inicio"><p class="empty-msg">Sin historial aún.</p></div>
       </div>
-    </div>
 
-    <!-- PLANTILLA VIEW -->
-    <div id="view-plantilla" class="view">
-      <div class="card">
-        <p class="lbl">Plantilla de gastos fijos</p>
-        <p class="hint">Estos gastos se ofrecerán para cargar al inicio de cada mes.</p>
-        <div id="plantilla-lista"></div>
-        <div class="divider"></div>
-        <p class="lbl" style="margin-top:12px;">Agregar gasto fijo</p>
-        <input type="text" id="p-desc" placeholder="Descripcion..." />
-        <input type="number" id="p-monto" placeholder="Monto (S/)" step="0.01" min="0" />
-        <select id="p-cat">
-          <option value="Creditos">Creditos</option>
-          <option value="Vivienda">Vivienda</option>
-          <option value="Servicios">Servicios</option>
-          <option value="Alimentacion">Alimentacion</option>
-          <option value="Movilidad">Movilidad</option>
-          <option value="Otro">Otro</option>
-        </select>
-        <button class="btn-primary" onclick="addPlantilla()">+ Agregar a plantilla</button>
-      </div>
     </div>
-
   </main>
 </div>
 
-<!-- MODAL: cargar fijos al inicio de mes -->
-<div id="modal-fijos" class="modal-overlay" style="display:none;">
-  <div class="modal">
-    <p class="modal-title">Nuevo mes detectado</p>
-    <p class="modal-body">¿Deseas cargar los gastos fijos de tu plantilla para este mes?</p>
-    <div id="modal-preview"></div>
-    <div class="modal-btns">
-      <button class="btn-secondary" onclick="closeModal()">No por ahora</button>
-      <button class="btn-primary" onclick="cargarFijos()">Sí, cargar fijos</button>
+<!-- MODAL AJUSTAR FONDO -->
+<div id="modal-fondo" style="display:none;position:fixed;inset:0;background:rgba(107,26,58,0.25);z-index:100;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:white;border-radius:16px;border:1px solid #F4C0D1;padding:24px;max-width:360px;width:100%;">
+    <p style="font-size:16px;font-weight:700;color:#6B1A3A;margin-bottom:8px;" id="modal-fondo-title">Ajustar fondo</p>
+    <p style="font-size:13px;color:#993056;margin-bottom:14px;line-height:1.5;" id="modal-fondo-subtitle"></p>
+    <input type="number" id="fondo-monto" placeholder="Monto (S/)" step="0.01" min="0" style="margin-bottom:12px;" />
+    <div style="display:flex;gap:8px;">
+      <button class="btn-secondary" style="margin-bottom:0;" onclick="closeFondoModal()">Cancelar</button>
+      <button class="btn-danger-outline" onclick="ajustarFondo('restar')">− Restar</button>
+      <button class="btn-primary" style="margin-bottom:0;" onclick="ajustarFondo('sumar')">+ Sumar</button>
     </div>
   </div>
 </div>
