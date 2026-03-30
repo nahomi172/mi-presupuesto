@@ -13,6 +13,7 @@ const CATS = {
   'gvn-gasolina':  { label:'Gasolina',            grupo:'Var. Nec.' },
   'gvn-salud':     { label:'Salud',               grupo:'Var. Nec.' },
   'gvn-mascbanos': { label:'Mascota Baños',       grupo:'Var. Nec.' },
+  'gvn-limp':       { label:'Limpieza',         grupo:'Var. Nec.' },
   'gvn-vet':       { label:'Veterinario',         grupo:'Var. Nec.' },
   'gvnn-rest':     { label:'Restaurantes',        grupo:'Var. No Nec.' },
   'gvnn-bares':    { label:'Bares',               grupo:'Var. No Nec.' },
