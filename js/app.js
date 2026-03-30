@@ -70,7 +70,7 @@ async function ajustarFondo(op) {
   else state.operativo = +(state.operativo+delta).toFixed(2);
   await apiPost({ action:'updateFondos', operativo:state.operativo, emergencia:state.emergencia });
   
-const API_URL = 'https://script.google.com/macros/s/AKfycbwaOi1yyWKH3GnP6q81dYikf7_C75eTp7RzMrLHb_aLh8ri_uIX9lXy0VYwmXjUtf2S/exec';
+// API_URL defined in app
 const ALLOWED_EMAILS = ['nahomi172@gmail.com'];
 let fondoModalTarget = '';
 
@@ -317,6 +317,47 @@ function exportXLS() {
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(s4), 'Historial');
 
   XLSX.writeFile(wb, `presupuesto_${cur}.xlsx`);
+}
+
+function showView(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.getElementById('nav-'+v).classList.add('active');
+}
+
+const API_URL = 'https://script.google.com/macros/s/AKfycbwaOi1yyWKH3GnP6q81dYikf7_C75eTp7RzMrLHb_aLh8ri_uIX9lXy0VYwmXjUtf2S/exec';
+let fondoModalTarget = '';
+
+function setLoading(on) {
+  document.getElementById('loading').style.display = on ? 'flex' : 'none';
+}
+async function apiGet(action) {
+  const res = await fetch(API_URL + '?action=' + action);
+  return res.json();
+}
+async function apiPost(body) {
+  const res = await fetch(API_URL, { method:'POST', body:JSON.stringify(body) });
+  return res.json();
+}
+
+async function initApp() {
+  setLoading(true);
+  try {
+    const [fondos, gastos] = await Promise.all([ apiGet('getFondos'), apiGet('getGastos') ]);
+    state.operativo  = fondos.operativo;
+    state.emergencia = fondos.emergencia;
+    const seen = new Set();
+    state.gastos = (gastos.data || []).filter(g => {
+      if (seen.has(g.id)) return false;
+      seen.add(g.id); return true;
+    });
+    render();
+  } catch(e) {
+    alert('Error conectando con Google Sheets.');
+    console.error(e);
+  }
+  setLoading(false);
 }
 
 function showView(v) {
