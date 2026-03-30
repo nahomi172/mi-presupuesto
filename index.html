@@ -7,7 +7,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 </head>
 <body>
@@ -16,13 +15,16 @@
 <div id="login-screen" style="display:flex;position:fixed;inset:0;background:#FDF0F5;z-index:300;align-items:center;justify-content:center;flex-direction:column;font-family:'Raleway',sans-serif;">
   <div style="position:absolute;width:220px;height:220px;border-radius:50%;background:#EEEDFE;opacity:0.4;top:-60px;right:-60px;"></div>
   <div style="position:absolute;width:150px;height:150px;border-radius:50%;background:#F4C0D1;opacity:0.35;bottom:60px;left:-40px;"></div>
-  <div style="text-align:center;position:relative;z-index:1;">
+  <div style="text-align:center;position:relative;z-index:1;padding:0 20px;">
     <p style="font-size:28px;color:#C0407A;margin-bottom:4px;">◈</p>
     <h1 style="font-size:22px;font-weight:600;color:#6B1A3A;margin-bottom:6px;">Mi Presupuesto</h1>
-    <p style="font-size:13px;color:#C06090;margin-bottom:24px;">Inicia sesión para continuar</p>
-    <div id="g_id_onload" data-client_id="969276712231-3q1o9t3es29c8bu8uqc9j9ole7408drc.apps.googleusercontent.com" data-callback="handleLogin" data-auto_prompt="false"></div>
-    <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="sign_in_with" data-shape="pill" data-logo_alignment="left"></div>
-    <p id="login-error" style="font-size:12px;color:#D4537E;margin-top:12px;display:none;">Acceso no autorizado.</p>
+    <p style="font-size:13px;color:#C06090;margin-bottom:28px;">Inicia sesión para continuar</p>
+    <button id="btn-login" onclick="loginConGoogle()"
+      style="display:flex;align-items:center;gap:12px;background:white;border:1px solid #F4C0D1;border-radius:30px;padding:12px 24px;font-family:'Raleway',sans-serif;font-size:14px;font-weight:600;color:#6B1A3A;cursor:pointer;margin:0 auto;box-shadow:0 2px 8px rgba(212,83,126,0.15);">
+      <img src="https://www.google.com/favicon.ico" width="18" height="18" />
+      Continuar con Google
+    </button>
+    <p id="login-error" style="font-size:12px;color:#D4537E;margin-top:16px;display:none;">Acceso no autorizado para este correo.</p>
   </div>
 </div>
 
@@ -60,7 +62,6 @@
   <main class="main">
     <div id="view-dashboard" class="view active">
 
-      <!-- FONDOS -->
       <div class="fondos-grid">
         <div class="fondo-card">
           <p class="fondo-label">Fondo emergencia</p>
@@ -78,7 +79,6 @@
         </div>
       </div>
 
-      <!-- REGISTRAR GASTO -->
       <div class="card">
         <p class="lbl">Registrar gasto</p>
         <div class="form-row">
@@ -113,7 +113,6 @@
         </div>
       </div>
 
-      <!-- HISTORIAL -->
       <div class="card">
         <p class="lbl">Historial por mes</p>
         <div id="historial-inicio"><p class="empty-msg">Sin historial aún.</p></div>
@@ -127,7 +126,7 @@
 <div id="modal-fondo" style="display:none;position:fixed;inset:0;background:rgba(107,26,58,0.25);z-index:100;align-items:center;justify-content:center;padding:16px;">
   <div style="background:white;border-radius:16px;border:1px solid #F4C0D1;padding:24px;max-width:360px;width:100%;">
     <p style="font-size:16px;font-weight:700;color:#6B1A3A;margin-bottom:8px;" id="modal-fondo-title">Ajustar fondo</p>
-    <p style="font-size:13px;color:#993056;margin-bottom:14px;line-height:1.5;" id="modal-fondo-subtitle"></p>
+    <p style="font-size:13px;color:#993056;margin-bottom:14px;" id="modal-fondo-subtitle"></p>
     <input type="number" id="fondo-monto" placeholder="Monto (S/)" step="0.01" min="0" style="margin-bottom:12px;" />
     <div style="display:flex;gap:8px;">
       <button class="btn-secondary" style="margin-bottom:0;" onclick="closeFondoModal()">Cancelar</button>
@@ -138,6 +137,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="js/login.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
