@@ -13,7 +13,6 @@ const CATS = {
   'gvn-gasolina':  { label:'Gasolina',            grupo:'Var. Nec.' },
   'gvn-salud':     { label:'Salud',               grupo:'Var. Nec.' },
   'gvn-mascbanos': { label:'Mascota Baños',       grupo:'Var. Nec.' },
-  'gvn-limp':       { label:'Limpieza',         grupo:'Var. Nec.' },
   'gvn-vet':       { label:'Veterinario',         grupo:'Var. Nec.' },
   'gvnn-rest':     { label:'Restaurantes',        grupo:'Var. No Nec.' },
   'gvnn-bares':    { label:'Bares',               grupo:'Var. No Nec.' },
@@ -109,10 +108,17 @@ async function addGasto() {
   setLoading(true);
   const res = await apiPost({ action:'addGasto', desc, cat, monto, fecha:new Date().toISOString(), mes:mesKey() });
   if (res.ok) {
-    state.operativo = +(state.operativo - monto).toFixed(2);
-    state.gastos.push({ id:res.id, fecha:new Date().toISOString(), desc, cat, monto:+monto, mes:mesKey() });
     document.getElementById('desc').value  = '';
     document.getElementById('monto').value = '';
+    // Reload all data from Sheet to avoid duplicates
+    const [fondos, gastos] = await Promise.all([apiGet('getFondos'), apiGet('getGastos')]);
+    state.operativo  = fondos.operativo;
+    state.emergencia = fondos.emergencia;
+    const seen = new Set();
+    state.gastos = (gastos.data || []).filter(g => {
+      if (seen.has(g.id)) return false;
+      seen.add(g.id); return true;
+    });
     render();
   }
   setLoading(false);
